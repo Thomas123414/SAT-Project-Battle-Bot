@@ -19,10 +19,10 @@ const int PWM128 = 128;
 // Constants
 const int D = 1;
 const int timeDelay = 30;
+char incomingByte;
 /**
  * Global Variables
  */
-char incomingByte;
 bool stopFlag = false;
 
 void setup() {
@@ -42,43 +42,41 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-if(Serial.available() > 0)
+  while(Serial.available() == 0);
   {
-    //Bluetooth Command
-    incomingByte = Serial.read();
-    Serial.println(incomingByte);
-    switch(incomingByte)
-    {
-    case 'f':
-      if(!stopFlag) {
+      //Bluetooth Command
+      incomingByte = Serial.read();
+      Serial.println(incomingByte);
+      switch(incomingByte)
+      {
+      case 'f':
         Forward();
-      }
-      break;
-    case 'b':
-      Backward();
-      break;
-    case 'l':
-      if(!stopFlag) {
+        Serial.println("Forward");
+        break;
+      case 'b':
+        Backward();
+        Serial.println("Backwards");
+        break;
+      case 'l':
         Left(PWM255);
-      }
-      else
-      {
-        Left(PWM128);
-      }
-      break;
-    case 'r':
-     if(!stopFlag) {
+        Serial.println("Left");
+        break;
+      case 'r':
         Right(PWM255);
-      }
-      else
-      {
-        Right(PWM128);
-      }
-      break;
-    default:
-      StopMove();
-      break;  
-    } //Switch
+        Serial.println("right");
+        break;
+      case 'c':
+        Brake();
+        Serial.println("brake");
+        break;
+      case 's':
+        StopMove();
+        Serial.println("stop");
+        break;
+      default:
+        StopMove();
+        break;  
+      } //Switch
   }
 }
 
@@ -91,11 +89,11 @@ void Forward()
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
-  for (int x = 0; x < 256; x++)   // Motor will accelerate from 0 to maximum speed
+  for (int x = 0; x < 192; x++)   // Motor will accelerate from 0 to maximum speed
   {
     analogWrite(ENA, x);
     analogWrite(ENB, x);
-    delay(20);
+    delay(35);
   } 
 }
 
@@ -108,11 +106,11 @@ void Backward()
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-  for (int x = 0; x < 256; x++)   // Motor will accelerate from 0 to maximum speed
+  for (int x = 0; x < 192; x++)   // Motor will accelerate from 0 to maximum speed
   {
     analogWrite(ENA, x);
     analogWrite(ENB, x);
-    delay(20);
+    delay(35);
   } 
 }
 
@@ -147,17 +145,16 @@ void Right(int pwm)
  */
 void Brake()
 {
-  for (int y = 255; y >= 0; --y)  // Motor will decelerate from maximum speed to 0
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, HIGH);
+   for (int y = 192; y > 0; --y)  // Motor will decelerate from maximum speed to 0
   {
     analogWrite(ENA, y);
     analogWrite(ENB, y);
     delay(20);
   } 
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, HIGH);
-  delay(timeDelay);
 }
 
 void StopMove()
